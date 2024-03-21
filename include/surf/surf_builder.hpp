@@ -301,7 +301,7 @@ inline void SuRFBuilder::storeSuffix(const level_t level, const word_t suffix) {
     position_t offset = pos % kWordSize;
     position_t word_remaining_len = kWordSize - offset;
     if (suffix_len <= word_remaining_len) {
-        word_t shifted_suffix = suffix << (word_remaining_len - suffix_len);
+        word_t shifted_suffix = (suffix == 0) ? 0 : suffix << (word_remaining_len - suffix_len);
         suffixes_[level - 1][word_id] += shifted_suffix;
     } else {
         word_t suffix_left_part = suffix >> (suffix_len - word_remaining_len);

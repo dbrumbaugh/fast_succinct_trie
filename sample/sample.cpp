@@ -2,13 +2,43 @@
 #include <iostream>
 
 #include <fst.hpp>
+#include <vector>
+#include <algorithm>
+#include <sstream>
+
+std::vector<std::string> read_string_data(std::string fname, size_t n) {
+    std::vector<std::string> vec;
+    vec.reserve(n);
+
+    std::fstream file;
+    file.open(fname, std::ios::in);
+
+    for (size_t i=0; i<n; i++) {
+        std::string line;
+        if (!std::getline(file, line, '\n')) break;
+
+        std::stringstream ls(line);
+        std::string field;
+
+        std::getline(ls, field, '\t');
+        std::getline(ls, field, '\n');
+        vec.push_back(std::string(field));
+    }
+
+    std::sort(vec.begin(), vec.end());
+
+    return vec;
+}
 
 int main() {
+        /*
     std::vector<std::string> keys = {
         "ACML",  "AISTATS", "DS",    "DSAA",   "ICDM",   "ICML",  //
         "PAKDD", "SDM",     "SIGIR", "SIGKDD", "SIGMOD",
     };
+        */
 
+    auto keys = read_string_data("kjv-wordlist.txt", 10000);
     // a trie-index constructed from string keys sorted
     fst::Trie trie(keys);
 
@@ -16,7 +46,7 @@ int main() {
     std::cout << "[searching]" << std::endl;
     for (size_t i = 0; i < keys.size(); ++i) {
         fst::position_t key_id = trie.exactSearch(keys[i]);
-        std::cout << " - " << keys[i] << ": " << key_id << std::endl;
+        std::cout << " - " << keys[i] << "(" << i << "): " << key_id << std::endl;
     }
 
     std::cout << "[statistics]" << std::endl;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "surf/louds_dense.hpp"
 #include "surf/louds_sparse.hpp"
 #include "surf/surf_builder.hpp"
@@ -93,6 +95,8 @@ class Trie {
     detail::CompactArray suffix_ptrs_;
     std::vector<char> suffixes_;  // unified
     position_t num_keys_ = 0;
+
+    std::vector<size_t> index_vector_;
 };
 
 Trie::Trie(const std::vector<std::string>& keys) : Trie(keys, surf::kIncludeDense, surf::kSparseDenseRatio) {}
@@ -136,6 +140,7 @@ Trie::Trie(const std::vector<std::string>& keys, const bool include_dense, const
 
     std::vector<suffix_t> suffixes_builder(num_keys_);
 
+    index_vector_.resize(keys.size());
     for (position_t i = 0; i < keys.size(); ++i) {
         if (i != 0 && keys[i] == keys[i - 1]) {
             continue;
@@ -151,6 +156,7 @@ Trie::Trie(const std::vector<std::string>& keys, const bool include_dense, const
 
         auto str = std::make_pair(keys[i].c_str() + level, keys[i].length() - level);
         suffixes_builder[key_id] = suffix_t{str, key_id};
+        index_vector_[key_id] = i;
     }
 
     std::sort(suffixes_builder.begin(), suffixes_builder.end(), [](const suffix_t& x, const suffix_t& y) {
@@ -217,7 +223,7 @@ position_t Trie::exactSearch(const std::string& key) const {
     if (suffixes_[suf_pos] != '\0') {
         return kNotFound;
     }
-    return key_id;
+    return index_vector_[key_id];
 }
 
 uint64_t Trie::getSizeIO() const {
@@ -227,7 +233,7 @@ uint64_t Trie::getSizeIO() const {
 
 uint64_t Trie::getMemoryUsage() const {
     return sizeof(Trie) + louds_dense_->getMemoryUsage() + louds_sparse_->getMemoryUsage() +
-           suffix_ptrs_.getMemoryUsage() + detail::getVecMemoryUsage(suffixes_);
+           suffix_ptrs_.getMemoryUsage() + detail::getVecMemoryUsage(suffixes_) + index_vector_.size() * sizeof(size_t);
 }
 
 level_t Trie::getHeight() const {
