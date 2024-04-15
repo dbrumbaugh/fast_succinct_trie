@@ -31,7 +31,7 @@ class Bitvector {
         num_bits_ = totalNumBits(num_bits_per_level, start_level, end_level);
 
         // Modified by Shunsuke Kanda
-        bits_ = std::make_unique<word_t[]>(numWords());
+        bits_ = std::make_unique<word_t[]>(numWords() + 1);
         memset(bits_.get(), 0, bitsSize());
         // bits_ = new word_t[numWords()];
         // memset(bits_, 0, bitsSize());
